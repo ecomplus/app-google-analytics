@@ -7,8 +7,8 @@
 
 const app = {
   app_id: 122241,
-  title: 'My Awesome E-Com Plus App',
-  slug: 'my-awesome-app',
+  title: 'Google Analytics 4',
+  slug: 'google-analytics',
   type: 'external',
   state: 'active',
   authentication: true,
