@@ -17,8 +17,12 @@
     "brands": [],
     "categories": [],
     "customers": [],
-    "orders": [],
-    "carts": [],
+    "orders": [
+      "GET"
+    ],
+    "carts": [
+      "GET"
+    ],
     "orders/fulfillments": [],
     "orders/payments_history": [],
     "products/quantity": [],
@@ -26,7 +30,26 @@
     "products/price": [],
     "products/variations/price": []
   },
-  "admin_settings": {},
+  "admin_settings": {
+    "firebase_app_id": {
+      "schema": {
+        "type": "string",
+        "maxLength": 500,
+        "title": "API Secret",
+        "description": "ID do app do Firebase [Consultar Documentação](https://developers.google.com/analytics/devguides/collection/protocol/ga4/sending-events?client_type=firebase#required_parameters)"
+      },
+      "hide": true
+    },
+    "api_secret": {
+      "schema": {
+        "type": "string",
+        "maxLength": 500,
+        "title": "API Secret",
+        "description": "Uma API Secret gerada na IU do Google Analytics. [Consultar Documentação](https://developers.google.com/analytics/devguides/collection/protocol/ga4/sending-events?client_type=firebase#required_parameters)"
+      },
+      "hide": true
+    }
+  },
   "auth_callback_uri": "https://us-central1-ecom-ga.cloudfunctions.net/app/ecom/auth-callback",
   "version": "1.0.0"
 }
