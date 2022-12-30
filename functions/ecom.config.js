@@ -175,11 +175,8 @@ const app = {
 
 const procedures = []
 
-/**
- * Uncomment and edit code above to configure `triggers` and receive respective `webhooks`:
-*/
-const { baseUri } = require('./__env')
-
+// const { baseUri } = require('./__env')
+/*
 procedures.push({
   title: app.title,
 
@@ -189,9 +186,8 @@ procedures.push({
       resource: 'orders',
       action: 'create',
     },
-    /*
-    // Receive notifications when order financial/fulfillment status are set or changed:
-    // Obs.: you probably SHOULD NOT enable the orders triggers below and the one above (create) together.
+
+    /* Receive notifications when order financial/fulfillment status changes:
     {
       resource: 'orders',
       field: 'financial_status',
@@ -225,23 +221,21 @@ procedures.push({
     },
 
     // Feel free to create custom combinations with any Store API resource, subresource, action and field.
-    // */
   ],
 
-  webhooks: [
-    {
-      api: {
-        external_api: {
-          uri: `${baseUri}/ecom/webhook`
-        }
-      },
-      method: 'POST'
-    }
-  ]
+webhooks: [
+  {
+    api: {
+      external_api: {
+        uri: `${baseUri}/ecom/webhook`
+      }
+    },
+    method: 'POST'
+  }
+]
 })
-/*
- * You may also edit `routes/ecom/webhook.js` to treat notifications properly.
- */
+
+*/
 
 exports.app = app
 
