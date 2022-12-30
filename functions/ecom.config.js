@@ -175,8 +175,8 @@ const app = {
 
 const procedures = []
 
-// const { baseUri } = require('./__env')
-/*
+const { baseUri } = require('./__env')
+// /*
 procedures.push({
   title: app.title,
 
@@ -220,22 +220,22 @@ procedures.push({
       action: 'delete',
     },
 
-    // Feel free to create custom combinations with any Store API resource, subresource, action and field.
+    // */
   ],
 
-webhooks: [
-  {
-    api: {
-      external_api: {
-        uri: `${baseUri}/ecom/webhook`
-      }
-    },
-    method: 'POST'
-  }
-]
+  webhooks: [
+    {
+      api: {
+        external_api: {
+          uri: `${baseUri}/ecom/webhook`
+        }
+      },
+      method: 'POST'
+    }
+  ]
 })
 
-*/
+// */
 
 exports.app = app
 
