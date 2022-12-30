@@ -82,14 +82,14 @@ const app = {
       // 'DELETE',        // Delete customers
     ],
     orders: [
-      // 'GET',           // List/read orders with public and private fields
+      'GET',           // List/read orders with public and private fields
       // 'POST',          // Create orders
       // 'PATCH',         // Edit orders
       // 'PUT',           // Overwrite orders
       // 'DELETE',        // Delete orders
     ],
     carts: [
-      // 'GET',           // List all carts (no auth needed to read specific cart only)
+      'GET',           // List all carts (no auth needed to read specific cart only)
       // 'POST',          // Create carts
       // 'PATCH',         // Edit carts
       // 'PUT',           // Overwrite carts
@@ -138,37 +138,33 @@ const app = {
   },
 
   admin_settings: {
-    /**
-     * JSON schema based fields to be configured by merchant and saved to app `data` / `hidden_data`, such as:
-
-     webhook_uri: {
-       schema: {
-         type: 'string',
-         maxLength: 255,
-         format: 'uri',
-         title: 'Notifications URI',
-         description: 'Unique notifications URI available on your Custom App dashboard'
-       },
-       hide: true
-     },
-     token: {
-       schema: {
-         type: 'string',
-         maxLength: 50,
-         title: 'App token'
-       },
-       hide: true
-     },
-     opt_in: {
-       schema: {
-         type: 'boolean',
-         default: false,
-         title: 'Some config option'
-       },
-       hide: false
-     },
-
-     */
+    firebase_app_id: {
+      schema: {
+        type: 'string',
+        maxLength: 500,
+        title: 'API Secret',
+        description: 'ID do app do Firebase [Consultar Documentação](https://developers.google.com/analytics/devguides/collection/protocol/ga4/sending-events?client_type=firebase#required_parameters)'
+      },
+      hide: true
+    },
+    api_secret: {
+      schema: {
+        type: 'string',
+        maxLength: 500,
+        title: 'API Secret',
+        description: 'Uma API Secret gerada na IU do Google Analytics. [Consultar Documentação](https://developers.google.com/analytics/devguides/collection/protocol/ga4/sending-events?client_type=firebase#required_parameters)'
+      },
+      hide: true
+    },
+    // client_id: {
+    //   schema: {
+    //     type: 'string',
+    //     maxLength: 100,
+    //     title: 'Pixel ID',
+    //     description: ''
+    //   },
+    //   hide: true
+    // },
   }
 }
 
@@ -181,7 +177,7 @@ const procedures = []
 
 /**
  * Uncomment and edit code above to configure `triggers` and receive respective `webhooks`:
-
+*/
 const { baseUri } = require('./__env')
 
 procedures.push({
@@ -193,7 +189,7 @@ procedures.push({
       resource: 'orders',
       action: 'create',
     },
-
+    /*
     // Receive notifications when order financial/fulfillment status are set or changed:
     // Obs.: you probably SHOULD NOT enable the orders triggers below and the one above (create) together.
     {
@@ -229,6 +225,7 @@ procedures.push({
     },
 
     // Feel free to create custom combinations with any Store API resource, subresource, action and field.
+    // */
   ],
 
   webhooks: [
@@ -242,7 +239,7 @@ procedures.push({
     }
   ]
 })
-
+/*
  * You may also edit `routes/ecom/webhook.js` to treat notifications properly.
  */
 
