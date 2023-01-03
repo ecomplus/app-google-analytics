@@ -138,33 +138,24 @@ const app = {
   },
 
   admin_settings: {
-    firebase_app_id: {
+    measurement_id: {
       schema: {
         type: 'string',
-        maxLength: 500,
-        title: 'API Secret',
-        description: 'ID do app do Firebase [Consultar Documentação](https://developers.google.com/analytics/devguides/collection/protocol/ga4/sending-events?client_type=firebase#required_parameters)'
+        // maxLength: 500,
+        title: 'ID de métricas',
+        description: 'ID de métricas associado a um fluxo. Encontrado na IU do Google Analytics em:  Admin > Fluxos de dados > escolha seu fluxo > ID de métricas'
       },
       hide: true
     },
     api_secret: {
       schema: {
         type: 'string',
-        maxLength: 500,
+        // maxLength: 500,
         title: 'API Secret',
-        description: 'Uma API Secret gerada na IU do Google Analytics. [Consultar Documentação](https://developers.google.com/analytics/devguides/collection/protocol/ga4/sending-events?client_type=firebase#required_parameters)'
+        description: 'Uma API Secret gerada na IU do Google Analytics. Para criar uma nova chave secreta, navegue até: Admin > Fluxos de dados > escolha seu fluxo > Measurement Protocol > Cria'
       },
       hide: true
     },
-    // client_id: {
-    //   schema: {
-    //     type: 'string',
-    //     maxLength: 100,
-    //     title: 'Pixel ID',
-    //     description: ''
-    //   },
-    //   hide: true
-    // },
   }
 }
 
