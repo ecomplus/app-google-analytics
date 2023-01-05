@@ -19,12 +19,6 @@ const ECHO_SUCCESS = 'SUCCESS'
 const ECHO_SKIP = 'SKIP'
 const ECHO_API_ERROR = 'STORE_API_ERR'
 
-const getAuth = (appSdk, storeId) => new Promise((resolve, reject) => {
-  appSdk.getAuth(storeId)
-    .then(auth => resolve(auth))
-    .catch(err => reject(err))
-})
-
 const findOrderById = (appSdk, storeId, orderId, auth) => new Promise((resolve, reject) => {
   appSdk.apiRequest(storeId, `/orders/${orderId}.json`, 'GET', null, auth)
     .then(({ response }) => {
@@ -51,7 +45,7 @@ exports.post = async ({ appSdk }, req, res) => {
     let order = trigger.body
 
     try {
-      const auth = await getAuth(appSdk, storeId)
+      const auth = await appSdk.getAuth(storeId)
 
       if (order.status === 'cancelled') {
         res.sendStatus(204)
@@ -88,15 +82,6 @@ exports.post = async ({ appSdk }, req, res) => {
               price: item.final_price || item.price,
               quantity: item.quantity || 1
             }
-            if (item.extra_discount) {
-              if (item.extra_discount.value) {
-                eventItem.discount = item.extra_discount.value
-              }
-              if (item.extra_discount.discount_coupon) {
-                eventItem.coupon = item.extra_discount.discount_coupon
-              }
-            }
-
             if (item.variation_id) {
               eventItem.item_variant = item.variation_id
             }
@@ -115,6 +100,11 @@ exports.post = async ({ appSdk }, req, res) => {
           if (order.amount.tax || order.amount.extra) {
             params.tax = (order.amount.tax || 0) + (order.amount.extra || 0)
           }
+
+          if (order.extra_discount && order.extra_discount.discount_coupon) {
+            params.coupon = order.extra_discount.discount_coupon
+          }
+
           // https://developers.google.com/analytics/devguides/collection/ga4/reference/events?client_type=gtag#purchase
           const body = {
             client_id: `${buyer._id}`,
