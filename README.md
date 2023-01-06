@@ -2,6 +2,18 @@
 
 https://developers.google.com/analytics/devguides/collection/protocol/ga4/sending-events
 
+Send custom events for each order payment status:
+
+- `purchase_pending`
+- `purchase_under_analysis`
+- `purchase_paid`
+- `purchase_voided`
+- ...
+
+With same params of enhanced ecommerce default `purchase` event.
+
+Also send `refund` when order is cancelled (ref.: https://developers.google.com/analytics/devguides/collection/ga4/ecommerce?client_type=gtag#make_a_purchase_or_issue_a_refund).
+
 [![Deploy](https://github.com/ecomplus/app-google-analytics/workflows/Deploy/badge.svg)](https://github.com/ecomplus/app-google-analytics/actions?workflow=Deploy)  [![License MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ## E-Com Plus Application Starter
