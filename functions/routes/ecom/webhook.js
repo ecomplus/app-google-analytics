@@ -1,18 +1,14 @@
 // read configured E-Com Plus app data
 const getAppData = require('./../../lib/store-api/get-app-data')
 
-const Axios = require('axios')
+const axios = require('axios')
 
-const createAxios = () => {
-  const headers = {
+const Axios = axios.create({
+  baseURL: 'https://www.google-analytics.com',
+  headers: {
     'Content-Type': 'application/json'
   }
-
-  return Axios.create({
-    baseURL: 'https://www.google-analytics.com',
-    headers
-  })
-}
+})
 
 const SKIP_TRIGGER_NAME = 'SkipTrigger'
 const ECHO_SUCCESS = 'SUCCESS'
@@ -40,17 +36,12 @@ exports.post = async ({ appSdk }, req, res) => {
   const trigger = req.body
   // console.log('>>body: ', JSON.stringify(trigger), ' <<')
 
-  if (trigger.resource === 'orders' && trigger.action === 'create') {
-    const orderId = trigger.inserted_id
+  if (trigger.resource === 'orders') {
+    const orderId = trigger.inserted_id || trigger.resource_id
     let order = trigger.body
 
     try {
       const auth = await appSdk.getAuth(storeId)
-
-      if (order.status === 'cancelled') {
-        res.sendStatus(204)
-        return
-      }
       order = await findOrderById(appSdk, storeId, orderId, auth)
       // console.log('>> Webhooh Order: ', order)
       const buyer = order.buyers && order.buyers[0]
@@ -72,9 +63,10 @@ exports.post = async ({ appSdk }, req, res) => {
         const measurementId = appData.measurement_id
         const apiSecret = appData.api_secret
 
-        if (measurementId && apiSecret) {
+        if ((measurementId && apiSecret) &&
+          (order.status === 'cancelled' || order.financial_status.current)) {
           const url = `/mp/collect?api_secret=${apiSecret}&measurement_id=${measurementId}`
-          const axios = createAxios()
+
           const items = order.items.map(item => {
             const eventItem = {
               item_id: item.product_id || item.sku,
@@ -85,12 +77,16 @@ exports.post = async ({ appSdk }, req, res) => {
             if (item.variation_id) {
               eventItem.item_variant = item.variation_id
             }
+
+            if (order.extra_discount?.discount_coupon) {
+              eventItem.coupon = order.extra_discount.discount_coupon
+            }
             return eventItem
           })
 
           const params = {
             currency: order.currency_id || 'BRL',
-            transaction_id: (order.transactions && order.transactions[0]._id) || orderId,
+            transaction_id: orderId,
             value: order.amount.total,
             items
           }
@@ -100,21 +96,25 @@ exports.post = async ({ appSdk }, req, res) => {
           if (order.amount.tax || order.amount.extra) {
             params.tax = (order.amount.tax || 0) + (order.amount.extra || 0)
           }
-
-          if (order.extra_discount && order.extra_discount.discount_coupon) {
-            params.coupon = order.extra_discount.discount_coupon
-          }
+          params.coupon = order.utm.campaign
 
           // https://developers.google.com/analytics/devguides/collection/ga4/reference/events?client_type=gtag#purchase
+
+          let eventName = `purchase_${order.financial_status.current}`
+
+          if (order.status === 'cancelled') {
+            eventName = 'refund'
+          }
+
           const body = {
             client_id: `${buyer._id}`,
             events: [{
-              name: 'purchase',
+              name: eventName,
               params
             }]
           }
           console.log('s #', storeId, ' => url: ', url, ' body: ', JSON.stringify(body))
-          await axios.post(url, body)
+          await Axios.post(url, body)
           return res.send(ECHO_SUCCESS)
         } else {
           console.log('>> measurementId or apiSecret not found')

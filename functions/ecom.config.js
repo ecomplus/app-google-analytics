@@ -167,51 +167,20 @@ const app = {
 const procedures = []
 
 const { baseUri } = require('./__env')
-// /*
+
 procedures.push({
   title: app.title,
 
   triggers: [
-    // Receive notifications when new order is created:
     {
       resource: 'orders',
-      action: 'create',
+      field: 'status',
     },
 
-    /* Receive notifications when order financial/fulfillment status changes:
     {
       resource: 'orders',
       field: 'financial_status',
-    },
-    {
-      resource: 'orders',
-      field: 'fulfillment_status',
-    },
-
-    // Receive notifications when products/variations stock quantity changes:
-    {
-      resource: 'products',
-      field: 'quantity',
-    },
-    {
-      resource: 'products',
-      subresource: 'variations',
-      field: 'quantity'
-    },
-
-    // Receive notifications when cart is edited:
-    {
-      resource: 'carts',
-      action: 'change',
-    },
-
-    // Receive notifications when customer is deleted:
-    {
-      resource: 'customers',
-      action: 'delete',
-    },
-
-    // */
+    }
   ],
 
   webhooks: [
@@ -225,8 +194,6 @@ procedures.push({
     }
   ]
 })
-
-// */
 
 exports.app = app
 
