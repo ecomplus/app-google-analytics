@@ -62,9 +62,16 @@ exports.post = async ({ appSdk }, req, res) => {
 
         const measurementId = appData.measurement_id
         const apiSecret = appData.api_secret
+        let enabledEvent = order.financial_status?.current && appData.custom_events[order.financial_status?.current]
 
-        if ((measurementId && apiSecret) &&
-          (order.status === 'cancelled' || order.financial_status.current)) {
+        if (order.status === 'cancelled') {
+          enabledEvent = appData.custom_events.cancelled
+        }
+
+        console.log('>> Store: ', storeId, ' status: ', order.status, ' financial Status: ',
+          order.financial_status.current, ' enable: ', enabledEvent)
+
+        if (measurementId && apiSecret && enabledEvent) {
           const url = `/mp/collect?api_secret=${apiSecret}&measurement_id=${measurementId}`
 
           const items = order.items.map(item => {
@@ -85,9 +92,11 @@ exports.post = async ({ appSdk }, req, res) => {
           })
 
           const params = {
+            id: orderId,
             currency: order.currency_id || 'BRL',
             transaction_id: orderId,
             value: order.amount.total,
+            status: order.financial_status?.current || order.status,
             items
           }
           if (order.amount.freight) {
@@ -96,7 +105,9 @@ exports.post = async ({ appSdk }, req, res) => {
           if (order.amount.tax || order.amount.extra) {
             params.tax = (order.amount.tax || 0) + (order.amount.extra || 0)
           }
-          params.coupon = order.utm.campaign
+          if (order.utm?.campaign) {
+            params.coupon = order.utm.campaign
+          }
 
           // https://developers.google.com/analytics/devguides/collection/ga4/reference/events?client_type=gtag#purchase
 
@@ -113,11 +124,11 @@ exports.post = async ({ appSdk }, req, res) => {
               params
             }]
           }
-          console.log('s #', storeId, ' => url: ', url, ' body: ', JSON.stringify(body))
+          console.log('>> url: ', url, ' body: ', JSON.stringify(body))
           await Axios.post(url, body)
           return res.send(ECHO_SUCCESS)
         } else {
-          console.log('>> measurementId or apiSecret not found')
+          console.log('>> measurementId or apiSecret not found, or disabled event')
           return res.status(400).send(ECHO_SKIP)
         }
       }
