@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## 1.0.0 (2023-01-09)
+
+
+### Bug Fixes
+
+* **conf-webhook:** allow sending events after change of financial status or when status is canceled ([200fbc7](https://github.com/ecomplus/application-starter/commit/200fbc7aab93d90963901bfdf1376e92da766b74))
+* **deploy-firebase:** firebase deploy test ([07ea6d3](https://github.com/ecomplus/application-starter/commit/07ea6d3062c1c6670bbfa202a5b01eab52e6bc3f))
+* **deps:** update all non-major ([e0d743f](https://github.com/ecomplus/application-starter/commit/e0d743f4fd24b3a5baed80d190fbefd84dc3ca12))
+* **ecom-webhook:** fix parameter to send to GA API ([116619e](https://github.com/ecomplus/application-starter/commit/116619ea759fa5c0c3d32d305acc36c6489b5a21))
+
 ## [1.0.0-starter.26](https://github.com/ecomplus/application-starter/compare/v1.0.0-starter.25...v1.0.0-starter.26) (2022-02-24)
 
 ## [1.0.0-starter.25](https://github.com/ecomplus/application-starter/compare/v1.0.0-starter.24...v1.0.0-starter.25) (2022-02-24)
