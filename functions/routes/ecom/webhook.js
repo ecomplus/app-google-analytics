@@ -78,8 +78,8 @@ exports.post = async ({ appSdk, admin }, req, res) => {
 
         const measurementId = appData.measurement_id
         const apiSecret = appData.api_secret
-        let enabledCustonEvent = order.financial_status?.current && appData.custom_events
-        const enabledRefundEvent = order.status === 'cancelled' && appData.custom_events
+        const enabledCustonEvent = order.financial_status?.current && appData.custom_events
+        const enabledRefundEvent = order.status === 'cancelled' && appData.refund_event
 
         console.log('>> Store: ', storeId, ' status: ', order.status, ' financial Status: ',
           order.financial_status.current, ' enable Custon: ', enabledCustonEvent,
@@ -129,18 +129,20 @@ exports.post = async ({ appSdk, admin }, req, res) => {
           const collectionEventsSent = admin.firestore().collection('events_sent')
           let eventFirestore
           let eventName
-          let eventsSend
+          let customEventsSent = []
 
           if (enabledCustonEvent) {
             eventFirestore = await getEventFirestore(collectionEventsSent, orderId)
             eventName = `purchase_${order.financial_status.current}`
-            eventsSend = eventFirestore && eventFirestore.eventsSend
+            customEventsSent = (eventFirestore && eventFirestore.eventsSend) || []
 
-            if (eventFirestore && eventsSend[eventsSend.length - 1] === eventName) {
+            if (customEventsSent[customEventsSent.length - 1] !== eventName) {
               events.push({
                 name: eventName,
                 params
               })
+
+              customEventsSent.push(eventName)
             }
           }
 
@@ -159,14 +161,11 @@ exports.post = async ({ appSdk, admin }, req, res) => {
             console.log('>> url: ', url, ' body: ', JSON.stringify(body))
             await Axios.post(url, body)
 
-            if (enabledCustonEvent && eventFirestore && eventsSend) {
-              eventsSend.push(eventName)
-            }
-
             collectionEventsSent.doc(orderId)
               .set({
                 status: order.status,
-                eventsSend,
+                storeId,
+                customEventsSent,
                 updatedAt: new Date().toISOString()
               }, { merge: true })
               .catch(console.error)
