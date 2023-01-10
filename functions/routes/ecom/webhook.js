@@ -10,6 +10,22 @@ const Axios = axios.create({
   }
 })
 
+const getEventFirestore = (collectionEventsSent, orderId) =>
+  new Promise(resolve => {
+    const subscription = collectionEventsSent.doc(orderId)
+    subscription.get()
+      .then((documentSnapshot) => {
+        if (documentSnapshot.exists) {
+          resolve(documentSnapshot.data())
+        } else {
+          resolve(false)
+        }
+      })
+      .catch(() => {
+        resolve(false)
+      })
+  })
+
 const SKIP_TRIGGER_NAME = 'SkipTrigger'
 const ECHO_SUCCESS = 'SUCCESS'
 const ECHO_SKIP = 'SKIP'
@@ -25,7 +41,7 @@ const findOrderById = (appSdk, storeId, orderId, auth) => new Promise((resolve, 
     })
 })
 
-exports.post = async ({ appSdk }, req, res) => {
+exports.post = async ({ appSdk, admin }, req, res) => {
   // receiving notification from Store API
   const { storeId } = req
 
@@ -62,16 +78,14 @@ exports.post = async ({ appSdk }, req, res) => {
 
         const measurementId = appData.measurement_id
         const apiSecret = appData.api_secret
-        let enabledEvent = order.financial_status?.current && appData.custom_events[order.financial_status?.current]
-
-        if (order.status === 'cancelled') {
-          enabledEvent = appData.custom_events.cancelled
-        }
+        let enabledCustonEvent = order.financial_status?.current && appData.custom_events
+        const enabledRefundEvent = order.status === 'cancelled' && appData.custom_events
 
         console.log('>> Store: ', storeId, ' status: ', order.status, ' financial Status: ',
-          order.financial_status.current, ' enable: ', enabledEvent)
+          order.financial_status.current, ' enable Custon: ', enabledCustonEvent,
+          ' Event Cancelled', enabledRefundEvent)
 
-        if (measurementId && apiSecret && enabledEvent) {
+        if (measurementId && apiSecret) {
           const url = `/mp/collect?api_secret=${apiSecret}&measurement_id=${measurementId}`
 
           const items = order.items.map(item => {
@@ -109,24 +123,59 @@ exports.post = async ({ appSdk }, req, res) => {
             params.coupon = order.utm.campaign
           }
 
-          // https://developers.google.com/analytics/devguides/collection/ga4/reference/events?client_type=gtag#purchase
+          const clientId = buyer._id
+          const events = []
 
-          let eventName = `purchase_${order.financial_status.current}`
+          const collectionEventsSent = admin.firestore().collection('events_sent')
+          let eventFirestore
+          let eventName
+          let eventsSend
 
-          if (order.status === 'cancelled') {
-            eventName = 'refund'
+          if (enabledCustonEvent) {
+            eventFirestore = await getEventFirestore(collectionEventsSent, orderId)
+            eventName = `purchase_${order.financial_status.current}`
+            eventsSend = eventFirestore && eventFirestore.eventsSend
+
+            if (eventFirestore && eventsSend[eventsSend.length - 1] === eventName) {
+              events.push({
+                name: eventName,
+                params
+              })
+            }
           }
 
-          const body = {
-            client_id: `${buyer._id}`,
-            events: [{
-              name: eventName,
+          if (enabledRefundEvent) {
+            events.push({
+              name: 'refund',
               params
-            }]
+            })
           }
-          console.log('>> url: ', url, ' body: ', JSON.stringify(body))
-          await Axios.post(url, body)
-          return res.send(ECHO_SUCCESS)
+          // https://developers.google.com/analytics/devguides/collection/ga4/reference/events?client_type=gtag#purchase
+          if (enabledCustonEvent || enabledRefundEvent) {
+            const body = {
+              client_id: clientId,
+              events
+            }
+            console.log('>> url: ', url, ' body: ', JSON.stringify(body))
+            await Axios.post(url, body)
+
+            if (enabledCustonEvent && eventFirestore && eventsSend) {
+              eventsSend.push(eventName)
+            }
+
+            collectionEventsSent.doc(orderId)
+              .set({
+                status: order.status,
+                eventsSend,
+                updatedAt: new Date().toISOString()
+              }, { merge: true })
+              .catch(console.error)
+
+            return res.send(ECHO_SUCCESS)
+          } else {
+            console.log('>> Event not configured')
+            return res.send(ECHO_SKIP)
+          }
         } else {
           console.log('>> measurementId or apiSecret not found, or disabled event')
           return res.status(400).send(ECHO_SKIP)
