@@ -168,9 +168,9 @@ const app = {
     refund_event: {
       schema: {
         type: 'boolean',
-        title: 'Evento pedido cancelado',
+        title: 'Evento Refund',
         default: true,
-        description: 'Habilitar evento `refund` para Pedidos Cancelados',
+        description: 'Habilitar evento `refund` para atualização de status de Pedidos Cancelados',
       },
       hide: true
     }
