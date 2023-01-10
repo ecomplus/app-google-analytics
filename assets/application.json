@@ -46,6 +46,78 @@
         "description": "Uma API Secret gerada na IU do Google Analytics. Para criar uma nova chave secreta, navegue até: Admin > Fluxos de dados > escolha seu fluxo > Measurement Protocol > Cria"
       },
       "hide": true
+    },
+    "custom_events": {
+      "schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "pending": {
+            "type": "boolean",
+            "title": "Pendente",
+            "description": "Habilitar evento personalizado para status pendente"
+          },
+          "under_analysis": {
+            "type": "boolean",
+            "title": "Sob análise",
+            "description": "Habilitar evento personalizado para status sob análise"
+          },
+          "authorized": {
+            "type": "boolean",
+            "title": "Autorizado",
+            "description": "Habilitar evento personalizado para status autorizado"
+          },
+          "unauthorized": {
+            "type": "boolean",
+            "title": "Não autorizado",
+            "description": "Habilitar evento personalizado para status não autorizado"
+          },
+          "partially_paid": {
+            "type": "boolean",
+            "title": "Parcialmente pago",
+            "description": "Habilitar evento personalizado para status parcialmente pago"
+          },
+          "paid": {
+            "type": "boolean",
+            "title": "Pago",
+            "description": "Habilitar evento personalizado para status pago"
+          },
+          "in_dispute": {
+            "type": "boolean",
+            "title": "Em disputa",
+            "description": "Habilitar evento personalizado para status em disputa"
+          },
+          "partially_refunded": {
+            "type": "boolean",
+            "title": "Parcialmente ressarcido",
+            "description": "Habilitar evento personalizado para status Parcialmente ressarcido"
+          },
+          "refunded": {
+            "type": "boolean",
+            "title": "Devolvido",
+            "description": "Habilitar evento personalizado para status devolveu"
+          },
+          "voided": {
+            "type": "boolean",
+            "title": "Anulado",
+            "description": "Habilitar evento personalizado para status anulado"
+          },
+          "unknow": {
+            "type": "boolean",
+            "title": "Desconhecido",
+            "description": "Habilitar evento personalizado para status desconhecido"
+          },
+          "cancelled": {
+            "type": "boolean",
+            "title": "Cancelado",
+            "default": true,
+            "description": "Habilitar evento personalizado para status Cancelado."
+          }
+        },
+        "title": "Eventos Personalizados",
+        "description": "Desabilitar ou habilitar eventos personalizados de alteração de status do pedido para GA4"
+      },
+      "hide": true
     }
   },
   "auth_callback_uri": "https://us-central1-ecom-ga.cloudfunctions.net/app/ecom/auth-callback",
