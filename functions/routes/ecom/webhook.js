@@ -12,8 +12,8 @@ const Axios = axios.create({
 
 const getEventFirestore = (collectionEventsSent, orderId) =>
   new Promise(resolve => {
-    const subscription = collectionEventsSent.doc(orderId)
-    subscription.get()
+    const eventFirestore = collectionEventsSent.doc(orderId)
+    eventFirestore.get()
       .then((documentSnapshot) => {
         if (documentSnapshot.exists) {
           resolve(documentSnapshot.data())
@@ -85,7 +85,7 @@ exports.post = async ({ appSdk, admin }, req, res) => {
           order.financial_status.current, ' enable Custon: ', enabledCustonEvent,
           ' Event Cancelled', enabledRefundEvent)
 
-        if (measurementId && apiSecret) {
+        if (measurementId && apiSecret && (enabledCustonEvent || enabledRefundEvent)) {
           const url = `/mp/collect?api_secret=${apiSecret}&measurement_id=${measurementId}`
 
           const items = order.items.map(item => {
@@ -123,18 +123,15 @@ exports.post = async ({ appSdk, admin }, req, res) => {
             params.coupon = order.utm.campaign
           }
 
-          const clientId = buyer._id
           const events = []
 
           const collectionEventsSent = admin.firestore().collection('events_sent')
-          let eventFirestore
-          let eventName
           let customEventsSent = []
 
           if (enabledCustonEvent) {
-            eventFirestore = await getEventFirestore(collectionEventsSent, orderId)
-            eventName = `purchase_${order.financial_status.current}`
-            customEventsSent = (eventFirestore && eventFirestore.eventsSend) || []
+            const eventFirestore = await getEventFirestore(collectionEventsSent, orderId)
+            const eventName = `purchase_${order.financial_status.current}`
+            customEventsSent = (eventFirestore && eventFirestore.customEventsSent) || []
 
             if (customEventsSent[customEventsSent.length - 1] !== eventName) {
               events.push({
@@ -153,11 +150,13 @@ exports.post = async ({ appSdk, admin }, req, res) => {
             })
           }
           // https://developers.google.com/analytics/devguides/collection/ga4/reference/events?client_type=gtag#purchase
-          if (enabledCustonEvent || enabledRefundEvent) {
+
+          if (events.length) {
             const body = {
-              client_id: clientId,
+              client_id: buyer._id,
               events
             }
+
             console.log('>> url: ', url, ' body: ', JSON.stringify(body))
             await Axios.post(url, body)
 
