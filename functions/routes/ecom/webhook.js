@@ -10,21 +10,21 @@ const Axios = axios.create({
   }
 })
 
-const getEventFirestore = (collectionEventsSent, orderId) =>
-  new Promise(resolve => {
-    const eventFirestore = collectionEventsSent.doc(orderId)
-    eventFirestore.get()
-      .then((documentSnapshot) => {
-        if (documentSnapshot.exists) {
-          resolve(documentSnapshot.data())
-        } else {
-          resolve(false)
-        }
-      })
-      .catch(() => {
-        resolve(false)
-      })
-  })
+// const getEventFirestore = (collectionEventsSent, orderId) =>
+//   new Promise(resolve => {
+//     const eventFirestore = collectionEventsSent.doc(orderId)
+//     eventFirestore.get()
+//       .then((documentSnapshot) => {
+//         if (documentSnapshot.exists) {
+//           resolve(documentSnapshot.data())
+//         } else {
+//           resolve(false)
+//         }
+//       })
+//       .catch(() => {
+//         resolve(false)
+//       })
+//   })
 
 const SKIP_TRIGGER_NAME = 'SkipTrigger'
 const ECHO_SUCCESS = 'SUCCESS'
@@ -61,8 +61,7 @@ exports.post = async ({ appSdk, admin }, req, res) => {
       order = await findOrderById(appSdk, storeId, orderId, auth)
       // console.log('>> Webhooh Order: ', order)
       const buyer = order.buyers && order.buyers[0]
-      const clientIp = order.browser_ip
-      if (orderId && buyer && clientIp) {
+      if (orderId && order.items) {
         // get app configured options
 
         const appData = await getAppData({ appSdk, storeId, auth })
@@ -79,7 +78,7 @@ exports.post = async ({ appSdk, admin }, req, res) => {
         const measurementId = appData.measurement_id
         const apiSecret = appData.api_secret
         const enabledCustonEvent = order.financial_status?.current && appData.custom_events
-        const enabledRefundEvent = order.status === 'cancelled' && appData.refund_event
+        const enabledRefundEvent = order.status === 'cancelled' && appData.refund_event !== false
 
         console.log('>> Store: ', storeId, ' status: ', order.status, ' financial Status: ',
           order.financial_status.current, ' enable Custon: ', enabledCustonEvent,
@@ -125,55 +124,41 @@ exports.post = async ({ appSdk, admin }, req, res) => {
 
           const events = []
 
-          const collectionEventsSent = admin.firestore().collection('events_sent')
-          let customEventsSent = []
+          const docRef = admin.firestore().doc(`events_sent/${orderId}`)
+          const lastSentEvents = (await docRef.get()).get('eventNames') || []
 
-          if (enabledCustonEvent) {
-            const eventFirestore = await getEventFirestore(collectionEventsSent, orderId)
+          if (enabledCustonEvent && order.financial_status) {
             const eventName = `purchase_${order.financial_status.current}`
-            customEventsSent = (eventFirestore && eventFirestore.customEventsSent) || []
-
-            if (customEventsSent[customEventsSent.length - 1] !== eventName) {
-              events.push({
-                name: eventName,
-                params
-              })
-
-              customEventsSent.push(eventName)
+            if (!lastSentEvents.includes(eventName)) {
+              events.push({ name: eventName, params })
             }
           }
 
-          if (enabledRefundEvent) {
-            events.push({
-              name: 'refund',
-              params
-            })
+          if (enabledRefundEvent && !lastSentEvents.includes('refund')) {
+            events.push({ name: 'refund', params })
           }
           // https://developers.google.com/analytics/devguides/collection/ga4/reference/events?client_type=gtag#purchase
 
           if (events.length) {
             const body = {
-              client_id: buyer._id,
+              client_id: buyer?._id || new Date().toISOString(),
               events
             }
 
             console.log('>> url: ', url, ' body: ', JSON.stringify(body))
             await Axios.post(url, body)
 
-            collectionEventsSent.doc(orderId)
-              .set({
-                status: order.status,
-                storeId,
-                customEventsSent,
-                updatedAt: new Date().toISOString()
-              }, { merge: true })
+            await docRef.set({
+              storeId,
+              eventNames: events.map(({ name }) => name),
+              updatedAt: new Date()
+            }, { merge: true })
               .catch(console.error)
 
             return res.send(ECHO_SUCCESS)
-          } else {
-            console.log('>> Event not configured')
-            return res.send(ECHO_SKIP)
           }
+
+          return res.send(ECHO_SKIP)
         } else {
           console.log('>> measurementId or apiSecret not found, or disabled event')
           return res.status(400).send(ECHO_SKIP)
