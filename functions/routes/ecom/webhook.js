@@ -10,22 +10,6 @@ const Axios = axios.create({
   }
 })
 
-// const getEventFirestore = (collectionEventsSent, orderId) =>
-//   new Promise(resolve => {
-//     const eventFirestore = collectionEventsSent.doc(orderId)
-//     eventFirestore.get()
-//       .then((documentSnapshot) => {
-//         if (documentSnapshot.exists) {
-//           resolve(documentSnapshot.data())
-//         } else {
-//           resolve(false)
-//         }
-//       })
-//       .catch(() => {
-//         resolve(false)
-//       })
-//   })
-
 const SKIP_TRIGGER_NAME = 'SkipTrigger'
 const ECHO_SUCCESS = 'SUCCESS'
 const ECHO_SKIP = 'SKIP'
@@ -141,7 +125,7 @@ exports.post = async ({ appSdk, admin }, req, res) => {
 
           if (events.length) {
             const body = {
-              client_id: buyer?._id || new Date().toISOString(),
+              client_id: buyer?._id || Date.now().toString(),
               events
             }
 
@@ -151,7 +135,7 @@ exports.post = async ({ appSdk, admin }, req, res) => {
             await docRef.set({
               storeId,
               eventNames: events.map(({ name }) => name),
-              updatedAt: new Date()
+              updatedAt: admin.firestore.Timestamp.now()
             }, { merge: true })
               .catch(console.error)
 
