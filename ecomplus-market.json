@@ -1,7 +1,7 @@
 {
   "app": {
-    "title": "",
-    "short_description": "",
+    "title": "Google Analytics",
+    "short_description": "Atualização de status de pedidos no GA4 (refund) via servidor",
     "category": "tools"
   }
 }
