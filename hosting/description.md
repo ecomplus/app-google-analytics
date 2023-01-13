@@ -1,13 +1,12 @@
 # Google Analytics 4
 
-Envio automático de eventos de compra para o Google Analytics 4 através da API após cada novo pedido na plataforma.
-
+Atualização automática de status de pedidos no Google Analytics 4 através da API em servidor.
 
 ## Configure sua conta no Analytics
 
 * https://analytics.google.com
 
-Após  criado seu projeto no Analytics, configure seu fluxo de eventos de compra
+Após criado seu projeto no Analytics, configure seu fluxo de eventos de compra:
 
 1) Acesse as configurações de Administrador 
 
@@ -23,9 +22,8 @@ Após  criado seu projeto no Analytics, configure seu fluxo de eventos de compra
 
 7) Copie o ID da métrica e cole nas configurações do APP
 
-8) Clique em  Chave secreta da API do Measurement Protocol
+8) Clique em Chave secreta da API do Measurement Protocol
 
 9) Clique em Criar, escolha o apelido da chave de sua preferência e em seguida clique em criar 
 
 10) Por último copie o valor do secret da chave e cole nas configurações do APP
-
